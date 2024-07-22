@@ -1,13 +1,24 @@
 use std::{sync::mpsc, thread, time::{Duration, Instant}};
 
+pub fn normal() {
+    let nums = [43, 29, 39, 20, 42];
+    let start_time = Instant::now();
+
+    for num in nums {
+        let ans = fib(num);
+        println!("結果: fib ({})={}", num, ans);
+    }
+    showtime(start_time);
+}
+
 pub fn parallelization() {
-    let nums = [43, 111, 39, 90, 7];
+    let nums = [43, 29, 39, 20, 42];
     let start_time = Instant::now();
 
     let (tx, rx) = mpsc::channel::<(i64, i64)>();
     for num in nums {
         let sender = tx.clone();
-        thread::spawn(move || loop {
+        thread::spawn(move || {
             let ans = fib(num);
             sender.send((num, ans)).unwrap();
         });

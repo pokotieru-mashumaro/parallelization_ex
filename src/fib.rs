@@ -1,15 +1,29 @@
-use std::{sync::mpsc, thread, time::Instant};
+use std::{sync::mpsc, thread, time::{Duration, Instant}};
 
-fn parallelization() {
-    let nums = [43, 111, 3, 90, 7];
+pub fn parallelization() {
+    let nums = [43, 111, 39, 90, 7];
     let start_time = Instant::now();
 
     let (tx, rx) = mpsc::channel::<(i64, i64)>();
     for num in nums {
         let sender = tx.clone();
         thread::spawn(move || loop {
-            let ans = fib();
+            let ans = fib(num);
+            sender.send((num, ans)).unwrap();
         });
+    }
+
+    let mut job = nums.len();
+    loop {
+        if let Ok((arg, ans)) = rx.recv() {
+            job -= 1;
+            println!("結果: fib ({})={} (残り{})", arg, ans, job);
+            if job <= 0 {
+                showtime(start_time);
+                break;
+            }
+        }
+        thread::sleep(Duration::from_millis(300));
     }
 }
 
@@ -21,4 +35,9 @@ fn fib(n: i64) ->i64 {
         return 1;
     }
     return fib(n - 2) + fib(n - 1);
+}
+
+fn showtime(start_time: Instant) {
+    let time = start_time.elapsed();
+    println!("実行時間: {:?}", time);
 }
